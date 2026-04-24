@@ -253,6 +253,7 @@ footer{background:#060d1a;padding:36px 5%;border-top:1px solid rgba(255,255,255,
 <canvas id="hero-canvas"></canvas>
 
 <!-- NAV -->
+<canvas id="bg-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.4"></canvas>
 <nav id="navbar">
   <a href="#" class="nav-logo">
     <div class="nav-logo-icon">
@@ -373,8 +374,8 @@ footer{background:#060d1a;padding:36px 5%;border-top:1px solid rgba(255,255,255,
           <div class="pc-item"><div class="pc-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>Logo y foto de portada</div>
           <div class="pc-item"><div class="pc-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>Soporte por WhatsApp</div>
           <div class="pc-item"><div class="pc-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>Sin límite de productos</div>
-          <div class="pc-item" style="opacity:0.7"><div class="pc-check" style="background:rgba(0,188,212,0.3)"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>Control de stock <span style="background:#00bcd4;color:#0a1628;font-size:8px;padding:1px 6px;border-radius:8px;font-weight:700;margin-left:4px">Próximamente</span></div>
-          <div class="pc-item" style="opacity:0.7"><div class="pc-check" style="background:rgba(0,188,212,0.3)"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>Estadísticas y métricas <span style="background:#00bcd4;color:#0a1628;font-size:8px;padding:1px 6px;border-radius:8px;font-weight:700;margin-left:4px">Próximamente</span></div>
+          <div class="pc-item" ><div class="pc-check" ><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>Control de stock</div>
+          <div class="pc-item" ><div class="pc-check" ><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>Estadísticas y métricas</div>
         </div>
         <a href="https://wa.me/5493853048290?text=Hola!%20Me%20interesa%20el%20servicio%20de%20MenuQR" target="_blank" class="btn-orange">📲 Quiero mi carta digital</a>
         <p class="pc-note">Sin permanencia · Sin comisiones</p>
@@ -623,5 +624,69 @@ function enviar(e){
   window.open(`https://wa.me/5493853048290?text=${encodeURIComponent(txt)}`,'_blank');
 }
 </script>
+
+<script>
+// Animated background canvas
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+let bgParticles = [];
+
+function resizeBg() {
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+}
+resizeBg();
+window.addEventListener('resize', resizeBg);
+
+class BgParticle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * bgCanvas.width;
+    this.y = Math.random() * bgCanvas.height;
+    this.size = Math.random() * 1.8 + 0.3;
+    this.speedX = (Math.random() - 0.5) * 0.35;
+    this.speedY = (Math.random() - 0.5) * 0.35;
+    this.opacity = Math.random() * 0.5 + 0.1;
+    this.color = Math.random() > 0.6 ? '0,188,212' : Math.random() > 0.5 ? '249,115,22' : '100,120,200';
+  }
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    if (this.x < 0 || this.x > bgCanvas.width || this.y < 0 || this.y > bgCanvas.height) this.reset();
+  }
+  draw() {
+    bgCtx.beginPath();
+    bgCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    bgCtx.fillStyle = `rgba(${this.color},${this.opacity})`;
+    bgCtx.fill();
+  }
+}
+
+for (let i = 0; i < 80; i++) bgParticles.push(new BgParticle());
+
+function animateBg() {
+  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+  bgParticles.forEach(p => { p.update(); p.draw(); });
+  // Draw connections
+  for (let i = 0; i < bgParticles.length; i++) {
+    for (let j = i + 1; j < bgParticles.length; j++) {
+      const dx = bgParticles[i].x - bgParticles[j].x;
+      const dy = bgParticles[i].y - bgParticles[j].y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 120) {
+        bgCtx.beginPath();
+        bgCtx.moveTo(bgParticles[i].x, bgParticles[i].y);
+        bgCtx.lineTo(bgParticles[j].x, bgParticles[j].y);
+        bgCtx.strokeStyle = `rgba(0,188,212,${0.08 * (1 - dist/120)})`;
+        bgCtx.lineWidth = 0.5;
+        bgCtx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animateBg);
+}
+animateBg();
+</script>
+
 </body>
 </html>
